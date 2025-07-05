@@ -1,0 +1,86 @@
+{# productos/templates/productos/about_us.html #}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sobre Nosotros - FerrRokect</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; background-color: #f4f4f4; color: #333; }
+        .navbar {
+            background-color: #333;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-radius: 0 0 8px 8px; /* Solo para el navbar */
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .navbar a:hover {
+            background-color: #555;
+        }
+        .navbar .welcome-message {
+            color: white;
+            margin-right: 15px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #d9534f; text-align: center; margin-bottom: 20px; }
+        p { line-height: 1.6; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div>
+            <a href="{% url 'home' %}">Inicio</a>
+            <a href="{% url 'productos_list' %}">Productos</a> {# Lo cambiaremos luego #}
+            <a href="{% url 'about_us' %}">Sobre Nosotros</a>
+            <a href="{% url 'cart_detail' %}">Mi Carrito</a> 
+        </div>
+        <div>
+            {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+         {% endfor %}
+        {% if user.is_staff %}
+            <a href="{% url 'admin:index' %}" style="background-color: #d9534f; margin-left: 10px;">Panel Admin</a>
+        {% endif %}
+    </ul>
+{% endif %}
+            {% if user.is_authenticated %}
+                <span class="welcome-message">¡Hola, {{ user.username }}!</span>
+                <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" style="background: none; border: none; color: white; cursor: pointer; padding: 8px 15px; border-radius: 5px; transition: background-color 0.3s ease;">
+                        Cerrar Sesión
+                    </button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}">Iniciar Sesión</a>
+                <a href="{% url 'register' %}">Registrarse</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>Sobre Nosotros</h1>
+        <p>Bienvenidos a **FerrRokect**, tu ferretería de confianza en línea. Nos dedicamos a ofrecerte la más amplia selección de herramientas, materiales de construcción y accesorios para el hogar y la industria. Nuestra misión es simple: proporcionar productos de alta calidad a precios competitivos, con un servicio al cliente excepcional.</p>
+        <p>Fundada con la pasión por el bricolaje y el profesionalismo, FerrRokect se enorgullece de ser el aliado perfecto para tus proyectos. Ya seas un aficionado que busca la herramienta adecuada o un profesional que necesita materiales para una obra grande, tenemos lo que necesitas.</p>
+        <p>¡Gracias por elegir FerrRokect! Estamos aquí para ayudarte a construir tus sueños.</p>
+    </div>
+</body>
+</html>

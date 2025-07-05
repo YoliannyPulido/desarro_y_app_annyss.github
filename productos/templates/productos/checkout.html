@@ -1,0 +1,206 @@
+{# productos/templates/productos/checkout.html #}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - FerrRokect</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; background-color: #f4f4f4; color: #333; }
+        .navbar {
+            background-color: #333;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-radius: 0 0 8px 8px;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .navbar a:hover {
+            background-color: #555;
+        }
+        .navbar .welcome-message {
+            color: white;
+            margin-right: 15px;
+        }
+        .messages {
+            list-style: none;
+            padding: 10px;
+            margin: 0 0 20px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .messages li {
+            margin-bottom: 5px;
+        }
+        .messages .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .messages .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .messages .info, .messages .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #d9534f; text-align: center; margin-bottom: 30px; }
+
+        .checkout-summary {
+            border: 1px solid #eee;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .checkout-summary h2 {
+            margin-top: 0;
+            color: #333;
+            font-size: 1.1em;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .checkout-summary ul {
+            list-style: none;
+            padding: 0;
+        }
+        .checkout-summary li {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px dashed #eee;
+        }
+        .checkout-summary li:last-child {
+            border-bottom: none;
+        }
+        .checkout-summary .total {
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 2px solid #d9534f;
+        }
+        .checkout-form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .checkout-form input[type="text"],
+        .checkout-form textarea {
+            width: calc(100% - 22px); /* Ajuste para padding y borde */
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        .checkout-form textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .checkout-form input[type="radio"] {
+            margin-right: 5px;
+        }
+        .checkout-form .radio-group {
+            margin-bottom: 15px;
+        }
+        .checkout-form button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: #d9534f;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .checkout-form button:hover {
+            background-color: #c9302c;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div>
+            <a href="{% url 'home' %}">Inicio</a>
+            <a href="{% url 'productos_list' %}">Productos</a>
+            <a href="{% url 'about_us' %}">Sobre Nosotros</a>
+            <a href="{% url 'cart_detail' %}">Mi Carrito</a>
+        </div>
+        <div>
+            {% if user.is_authenticated %}
+                <span class="welcome-message">¡Hola, {{ user.username }}!</span>
+                {% if user.is_staff %}
+                    <a href="{% url 'admin:index' %}" style="background-color: #d9534f; margin-left: 10px;">Panel Admin</a>
+                {% endif %}
+                <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" style="background: none; border: none; color: white; cursor: pointer; padding: 8px 15px; border-radius: 5px; transition: background-color 0.3s ease;">
+                        Cerrar Sesión
+                    </button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}">Iniciar Sesión</a>
+                <a href="{% url 'register' %}">Registrarse</a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <div class="container">
+        <h1>Confirmar Pedido y Pago</h1>
+
+        <div class="checkout-summary">
+            <h2>Resumen del Carrito</h2>
+            <ul>
+                {% for item in cart_items %}
+                    <li>
+                        <span>{{ item.quantity }} x {{ item.producto.nombre }}</span>
+                        <span>${{ item.total_price }}</span>
+                    </li>
+                {% endfor %}
+                <li class="total">
+                    <span>Total a Pagar:</span>
+                    <span>${{ total_general }}</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="checkout-form">
+            <form method="post">
+                {% csrf_token %}
+                <label for="address">Dirección para el Delivery:</label>
+                <textarea id="address" name="address" rows="4" placeholder="Ej: Calle Principal, Casa #123, Ciudad, Estado, Código Postal" required></textarea>
+
+                <label>Método de Pago:</label>
+                <div class="radio-group">
+                    <input type="radio" id="cash" name="payment_method" value="Efectivo" required>
+                    <label for="cash">Efectivo (Pago al momento de la entrega)</label><br>
+                    <input type="radio" id="pago_movil" name="payment_method" value="Pago Móvil" required>
+                    <label for="pago_movil">Pago Móvil (Se te proporcionarán los datos al confirmar)</label>
+                </div>
+
+                <button type="submit">Confirmar Pedido</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

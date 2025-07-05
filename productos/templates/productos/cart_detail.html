@@ -1,0 +1,239 @@
+{# productos/templates/productos/cart_detail.html #}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tu Carrito de Compras - FerrRokect</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; background-color: #f4f4f4; color: #333; }
+        .navbar {
+            background-color: #333;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-radius: 0 0 8px 8px;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .navbar a:hover {
+            background-color: #555;
+        }
+        .navbar .welcome-message {
+            color: white;
+            margin-right: 15px;
+        }
+        .messages {
+            list-style: none;
+            padding: 10px;
+            margin: 0 0 20px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .messages li {
+            margin-bottom: 5px;
+        }
+        .messages .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .messages .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .messages .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #d9534f; text-align: center; margin-bottom: 30px; }
+
+        .cart-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .cart-table th, .cart-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        .cart-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .cart-table td img {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+            border-radius: 4px;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        .cart-table .product-info {
+            display: flex;
+            align-items: center;
+        }
+        .cart-table .quantity-input {
+            width: 60px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .cart-actions {
+            display: flex;
+            gap: 5px;
+        }
+        .cart-actions button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+        }
+        .cart-actions .update-btn {
+            background-color: #5cb85c;
+            color: white;
+        }
+        .cart-actions .update-btn:hover {
+            background-color: #4cae4c;
+        }
+        .cart-actions .remove-btn {
+            background-color: #f0ad4e;
+            color: white;
+        }
+        .cart-actions .remove-btn:hover {
+            background-color: #ec971f;
+        }
+
+        .cart-summary {
+            text-align: right;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+        .checkout-btn {
+            display: block;
+            width: fit-content;
+            margin: 0 auto;
+            padding: 15px 30px;
+            background-color: #d9534f;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 1.3em;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+        .checkout-btn:hover {
+            background-color: #c9302c;
+        }
+        .empty-cart-message {
+            text-align: center;
+            font-size: 1.1em;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div>
+            <a href="{% url 'home' %}">Inicio</a>
+            <a href="{% url 'productos_list' %}">Productos</a>
+            <a href="{% url 'about_us' %}">Sobre Nosotros</a>
+            <a href="{% url 'cart_detail' %}">Mi Carrito</a> {# Nuevo enlace al carrito #}
+        </div>
+        <div>
+            {% if user.is_authenticated %}
+                <span class="welcome-message">¡Hola, {{ user.username }}!</span>
+                {% if user.is_staff %}
+                    <a href="{% url 'admin:index' %}" style="background-color: #d9534f; margin-left: 10px;">Panel Admin</a>
+                {% endif %}
+                <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" style="background: none; border: none; color: white; cursor: pointer; padding: 8px 15px; border-radius: 5px; transition: background-color 0.3s ease;">
+                        Cerrar Sesión
+                    </button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}">Iniciar Sesión</a>
+                <a href="{% url 'register' %}">Registrarse</a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <div class="container">
+        <h1>Tu Carrito de Compras</h1>
+
+        {% if cart_items %}
+            <table class="cart-table">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Precio Unitario</th>
+                        <th>Cantidad</th>
+                        <th>Total</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in cart_items %}
+                    <tr>
+                        <td>
+                            <div class="product-info">
+                                {% if item.producto.imagen %}
+                                    <img src="{{ item.producto.imagen.url }}" alt="{{ item.producto.nombre }}">
+                                {% else %}
+                                    <img src="/media/no_image.png" alt="Sin imagen">
+                                {% endif %}
+                                {{ item.producto.nombre }}
+                            </div>
+                        </td>
+                        <td>${{ item.producto.precio }}</td>
+                        <td>
+                            <form action="{% url 'update_cart_item' item.id %}" method="post" style="display:flex; align-items:center;">
+                                {% csrf_token %}
+                                <input type="number" name="quantity" value="{{ item.quantity }}" min="0" max="{{ item.producto.stock }}" class="quantity-input">
+                                <button type="submit" class="update-btn">Actualizar</button>
+                            </form>
+                        </td>
+                        <td>${{ item.total_price }}</td>
+                        <td>
+                            <form action="{% url 'remove_from_cart' item.id %}" method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="remove-btn">Eliminar</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="cart-summary">
+                Total General: ${{ total_general }}
+            </div>
+
+            <a href="{% url 'checkout' %}" class="checkout-btn">Proceder al Pago</a> {# Este enlace lo implementaremos después #}
+
+        {% else %}
+            <p class="empty-cart-message">Tu carrito de compras está vacío.</p>
+            <a href="{% url 'productos_list' %}" class="checkout-btn" style="background-color: #337ab7;">Ver Productos</a>
+        {% endif %}
+    </div>
+</body>
+</html>
